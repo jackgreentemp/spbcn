@@ -124,6 +124,79 @@ class StoryController extends Controller
 
     }
 
+    public function addReply(){
+        $post_id = I('storyid');
+        $content = I('content');
+        $userid = I('userid');
 
+        if (empty($post_id) || empty($content) || empty($userid)) {
+            echo json_encode(array(
+                'status'=> 'FAILURE',
+                'reason' => '参数不能为空',
+                'data' => ''
+            ));
+            return false;
+        }
+
+        //添加到数据库
+        $model = D('SpbcnStoryReply');
+        $result = $model->addReply($post_id, $content, $userid);
+        if (!$result) {
+            echo json_encode(array(
+                'status'=> 'FAILURE',
+                'reason'=>'数据库操作失败',
+                'data'=>'',
+            ));
+        } else {
+            echo json_encode(array(
+                'status'=> 'SUCCESS',
+                'reason' => '',
+                'date' => date('Y-m-d'),
+                'data' => D('SpbcnStoryReply')->where('id='.$result)->find(),
+            ));
+        }
+
+    }
+
+    public function delReply()
+    {
+        $id = I('id');
+        $res = D('SpbcnStoryReply')->delPostReply($id);
+        if (!$res) {
+            echo json_encode(array(
+                'status'=> 'FAILURE',
+                'reason'=>'数据库操作失败',
+                'data'=>'',
+            ));
+        } else {
+            echo json_encode(array(
+                'status'=> 'SUCCESS',
+                'reason' => '',
+                'date' => date('Y-m-d'),
+                'data' => '',
+            ));
+        }
+    }
+
+    public function getReply(){
+        $storyId = I('storyid');
+
+        $res = D('SpbcnStoryReply')->getReply($storyId);
+        if (!$res) {
+            echo json_encode(array(
+                'status'=> 'SUCCESS',
+                'reason'=>'无评论',
+                'date' => date('Y-m-d'),
+                'data'=>'',
+            ));
+        } else {
+            echo json_encode(array(
+                'status'=> 'SUCCESS',
+                'reason' => '',
+                'date' => date('Y-m-d'),
+                'data' => $res
+            ));
+        }
+    }
 
 }

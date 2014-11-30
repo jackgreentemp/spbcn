@@ -75,6 +75,34 @@
         <input type="submit" value="提交" />
     </form>
 
+    <form action="{:U('Support/addStorySupport')}" enctype="multipart/form-data" method="post" >
+        <a>12.对故事点赞</a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;storyid: <input type ="text" name="storyid"/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;userid: <input type ="text" name="userid"/>
+        <input type="submit" value="提交" />
+    </form>
+
+    <form action="{:U('Story/addReply')}" enctype="multipart/form-data" method="post" >
+        <a>13.故事加评论</a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;storyid: <input type ="text" name="storyid"/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;content: <input type ="text" name="content"/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;userid: <input type ="text" name="userid"/>
+
+        <input type="submit" value="提交" />
+    </form>
+
+    <form action="{:U('Story/delReply')}" enctype="multipart/form-data" method="post" >
+        <a>14.故事删评论</a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Replyid: <input type ="text" name="id"/>
+        <input type="submit" value="提交" />
+    </form>
+
+    <form action="{:U('Story/getReply')}" enctype="multipart/form-data" method="post" >
+        <a>15.获取故事评论</a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;storyid: <input type ="text" name="storyid"/>
+        <input type="submit" value="提交" />
+    </form>
+
     <!--<a href="{:U('App/mReadData')}">2.查询所有数据</a>-->
     <!--<br/>-->
     <!--<form action="{:U('App/mReadDataById')}" enctype="multipart/form-data" method="get" >-->
