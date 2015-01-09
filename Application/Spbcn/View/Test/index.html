@@ -103,6 +103,24 @@
         <input type="submit" value="提交" />
     </form>
 
+    <a href="{:U('testAddAvatar')}">16.添加头像</a>
+    <br/>
+
+    <form action="{:U('Avatar/getAvatar')}" enctype="multipart/form-data" method="post" >
+        <a>17.查询头像</a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;userid: <input type ="text" name="userid"/>
+        <input type="submit" value="提交" />
+    </form>
+
+    <form action="{:U('Avatar/deleteAvatar')}" enctype="multipart/form-data" method="post" >
+        <a>18.删除头像</a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;userid: <input type ="text" name="userid"/>
+        <input type="submit" value="提交" />
+    </form>
+
+    <a href="{:U('testUpdateAvatar')}">19.修改头像</a>
+    <br/>
+
     <!--<a href="{:U('App/mReadData')}">2.查询所有数据</a>-->
     <!--<br/>-->
     <!--<form action="{:U('App/mReadDataById')}" enctype="multipart/form-data" method="get" >-->

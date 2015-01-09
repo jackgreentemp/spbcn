@@ -56,6 +56,14 @@ class TestController extends Controller
         $this->display('addStory');
     }
 
+    public function testAddAvatar(){
+        $this->display('addAvatar');
+    }
+
+    public function testUpdateAvatar(){
+        $this->display('updateAvatar');
+    }
+
 
 
 
