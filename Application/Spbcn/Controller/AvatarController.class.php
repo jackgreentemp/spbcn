@@ -44,7 +44,12 @@ class AvatarController extends Controller
             ));
             return false;
         }
-        $path = $info[0]['path'];
+        //$path = $info[0]['path'];
+
+        foreach($info as $key => $value){
+            $path = $value['path'];
+        }
+
         $avatarModel = D('Avatar');
         $avatarModel -> saveAvatar($userid,$path);
         //TODO:获取头像信息
@@ -95,7 +100,7 @@ class AvatarController extends Controller
     public function updateAvatar()
     {
         $userid = I('userid');
-        $this->deleteAvatar($userid);
+        $this->deleteAvatarInfo($userid);
 
         $Picture = D('Picture');
         $pic_driver = C('PICTURE_UPLOAD_DRIVER');
@@ -164,6 +169,51 @@ class AvatarController extends Controller
         return rmdir( $dir );
     }
 
+    //查询头像，用于share等模块返回头像信息
+    public function getAvtarInfo($userid){
+        $userid = $userid;
+        $avatarModel = D('Avatar');
+        $avatarPath = $avatarModel->getAvatar($userid);
+
+        $image = new \Think\Image();
+        $pathinfo = 'http://'.$_SERVER['SERVER_NAME'].__ROOT__;
+
+        if($avatarPath){
+            $image->open('.'.$avatarPath);// 按照原图的比例生成一个最大为150*150的缩略图并保存为thumb.jpg
+            $temp = pathinfo($avatarPath);
+            $thumbPath1 = $temp['dirname'].'/'.$temp['filename'].'_128_128.jpg';
+            if(!file_exists($thumbPath1))
+                $image->thumb(128, 128)->save('.'.$thumbPath1);
+            $thumbPath2 = $temp['dirname'].'/'.$temp['filename'].'_64_64.jpg';
+            if(!file_exists($thumbPath2))
+                $image->thumb(64, 64)->save('.'.$thumbPath2);
+            $thumbPath3 = $temp['dirname'].'/'.$temp['filename'].'_32_32.jpg';
+            if(!file_exists($thumbPath3))
+                $image->thumb(32, 32)->save('.'.$thumbPath3);
+            $result['avataBig'] = $pathinfo.$thumbPath1;
+            $result['avataMid'] = $pathinfo.$thumbPath2;
+            $result['avataSma'] = $pathinfo.$thumbPath3;
+        } else {
+            $result['avataBig'] = $pathinfo.'/Addons/Avatar/default_128_128.jpg';
+            $result['avataMid'] = $pathinfo.'/Addons/Avatar/default_64_64.jpg';
+            $result['avataSma'] = $pathinfo.'/Addons/Avatar/default_32_32.jpg';
+        }
+
+        return $result;
+    }
+
+    //删除头像
+    public function deleteAvatarInfo($userid){
+        $userid = I('userid');
+        $avatarModel = D('Avatar');
+        $avatarPath = $avatarModel->getAvatar($userid);
+        if($avatarPath){
+            $this -> delDir('./Uploads/spbcn/avatar/'.$userid.'/');
+            $avatarModel->removeAvatar($userid);
+        }else{
+            return false;
+        }
+    }
 
 
 

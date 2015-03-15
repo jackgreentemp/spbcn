@@ -76,6 +76,8 @@ class ShareController extends Controller
             return false;
         }
         $shareItem_id = $share->add();
+        //发布消息
+
 //        dump($share->where('id='.$shareItem_id)->find());
         $shareData = $this->getShareItemById($shareItem_id);
         echo json_encode(array(
@@ -204,6 +206,9 @@ class ShareController extends Controller
             return false;
         }
         $shareData['pic'] = unserialize($shareData['pic']);
+
+
+
         foreach($shareData['pic'] as $key => $value){
             $picpath = M('Picture') -> where('id='.$value['id']) -> field('path') -> find();
             $picdata[$key]['index'] = $key+1;
@@ -222,12 +227,8 @@ class ShareController extends Controller
         $val['pic'] = $picdata;
         $val['preview'] = mb_substr($val['content'],0,20,'utf-8');
         //TODO:添加fanlist
-        $val['fanlist'] = array(
-            array(
-                'username' => '',
-                'useravatar' => '',
-            ),
-        );
+        $supportController = new SupportController();
+        $val['fanlist'] = $supportController->getShareSupporterInfo($shareItem_id);
         return $val;
     }
 
@@ -251,6 +252,9 @@ class ShareController extends Controller
             ));
             return false;
         }
+
+        $supportController = new SupportController();
+
         foreach($shareData as $key0 => $value0){
             $value0['pic'] = unserialize($value0['pic']);
 
@@ -277,12 +281,8 @@ class ShareController extends Controller
             $val['pic'] = $picdata;
             $val['preview'] = mb_substr($val['content'],0,20,'utf-8');
             //TODO:添加fanlist
-            $val['fanlist'] = array(
-                array(
-                    'username' => '',
-                    'useravatar' => '',
-                ),
-            );
+
+            $val['fanlist'] = $supportController->getShareSupporterInfo($value0['id']);
             $result[] = $val;
         }
         echo json_encode(array(
@@ -314,6 +314,9 @@ class ShareController extends Controller
             ));
             return false;
         }
+
+        $supportController = new SupportController();
+
         foreach($shareData as $key0 => $value0){
             $value0['pic'] = unserialize($value0['pic']);
 
@@ -340,12 +343,8 @@ class ShareController extends Controller
             $val['pic'] = $picdata;
             $val['preview'] = mb_substr($val['content'],0,20,'utf-8');
             //TODO:添加fanlist
-            $val['fanlist'] = array(
-                array(
-                    'username' => '',
-                    'useravatar' => '',
-                ),
-            );
+
+            $val['fanlist'] = $supportController->getShareSupporterInfo($value0['id']);
             $result[] = $val;
         }
         echo json_encode(array(
@@ -392,6 +391,9 @@ class ShareController extends Controller
                 ));
                 return false;
             }
+
+            $supportController = new SupportController();
+
             foreach($shareData as $key0 => $value0){
                 $value0['pic'] = unserialize($value0['pic']);
 
@@ -418,12 +420,7 @@ class ShareController extends Controller
                 $val['pic'] = $picdata;
                 $val['preview'] = mb_substr($val['content'],0,20,'utf-8');
                 //TODO:添加fanlist
-                $val['fanlist'] = array(
-                    array(
-                        'username' => '',
-                        'useravatar' => '',
-                    ),
-                );
+                $val['fanlist'] = $supportController->getShareSupporterInfo($value0['id']);
                 $result[] = $val;
             }
             echo json_encode(array(
