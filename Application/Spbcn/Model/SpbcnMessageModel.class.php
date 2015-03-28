@@ -104,7 +104,7 @@ class SpbcnMessageModel extends Model
      * @param string $title 标题，默认为  您有新的消息
      * @param $url 链接地址，不提供则默认进入消息中心
      * @param $int $from_uid 发起消息的用户，根据用户自动确定左侧图标，如果为用户，则左侧显示头像
-     * @param int $type 消息类型，0系统，1share，2stroy, 3message
+     * @param int $type 消息类型，0系统，1:share，2:stroy, 3:message
      */
     public function sendMessageWithoutCheckSelf($to_uid, $content = '', $title = '您有新的消息', $url, $from_uid = 0, $type = 0, $appname = '', $apptype = '', $source_id = 0, $find_id = 0)
     {
@@ -131,7 +131,12 @@ class SpbcnMessageModel extends Model
 
     public function getAllMessage($userId){
 
-        return $this->where(array('to_uid' => $userId)) -> order('id desc') ->select();
+//        return $this->where(array('to_uid' => $userId)) -> order('id desc') ->select();
+        $resultArray = $this->where(array('to_uid' => $userId)) -> order('id desc') ->select();
+        foreach($resultArray as $key => $value){
+            $resultArray[$key]['username'] = M('Member')->where('uid='.$value['from_uid'])->getField('nickname');
+        }
+        return $resultArray;
 
     }
 

@@ -35,20 +35,24 @@ class MessageController extends Controller
 
         $model = D('SpbcnMessage');
         $result = $model->getAllMessage($userId);
-        if (!$result) {
-            echo json_encode(array(
-                'status'=> 'FAILURE',
-                'reason'=>'数据库操作失败',
-                'data'=>'',
-            ));
-        } else {
-            echo json_encode(array(
-                'status'=> 'SUCCESS',
-                'reason' => '',
-                'date' => date('Y-m-d'),
-                'data' => $result
-            ));
+        //TODO数据库操作失败校验
+//        if ($result==null) {
+//            echo json_encode(array(
+//                'status'=> 'FAILURE',
+//                'reason'=>'数据库操作失败',
+//                'data'=>'',
+//            ));
+//        } else {
+//        }
+        if($result == null){
+            $result = '';
         }
+        echo json_encode(array(
+            'status'=> 'SUCCESS',
+            'reason' => '',
+            'date' => date('Y-m-d'),
+            'data' => $result
+        ));
     }
 
     //获取所有未读消息

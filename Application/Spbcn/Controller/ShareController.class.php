@@ -255,6 +255,8 @@ class ShareController extends Controller
 
         $supportController = new SupportController();
 
+        $avatarController = new AvatarController();
+
         foreach($shareData as $key0 => $value0){
             $value0['pic'] = unserialize($value0['pic']);
 
@@ -265,6 +267,8 @@ class ShareController extends Controller
             } else{
                 $value0['supported'] = 0;
             }
+
+            $picdata = array();
 
             foreach($value0['pic'] as $key => $value){
                 $picpath = M('Picture') -> where('id='.$value['id']) -> field('path') -> find();
@@ -283,6 +287,10 @@ class ShareController extends Controller
             //TODO:添加fanlist
 
             $val['fanlist'] = $supportController->getShareSupporterInfo($value0['id']);
+
+            $avatarInfo = $avatarController->getAvtarInfo($val['userid']);
+            $val['useravatar'] = $avatarInfo['avataMid'];
+
             $result[] = $val;
         }
         echo json_encode(array(
@@ -317,6 +325,8 @@ class ShareController extends Controller
 
         $supportController = new SupportController();
 
+        $avatarController = new AvatarController();
+
         foreach($shareData as $key0 => $value0){
             $value0['pic'] = unserialize($value0['pic']);
 
@@ -327,6 +337,8 @@ class ShareController extends Controller
             } else{
                 $value0['supported'] = 0;
             }
+
+            $picdata = array();
 
             foreach($value0['pic'] as $key => $value){
                 $picpath = M('Picture') -> where('id='.$value['id']) -> field('path') -> find();
@@ -345,6 +357,10 @@ class ShareController extends Controller
             //TODO:添加fanlist
 
             $val['fanlist'] = $supportController->getShareSupporterInfo($value0['id']);
+
+            $avatarInfo = $avatarController->getAvtarInfo($val['userid']);
+            $val['useravatar'] = $avatarInfo['avataMid'];
+
             $result[] = $val;
         }
         echo json_encode(array(
@@ -393,6 +409,7 @@ class ShareController extends Controller
             }
 
             $supportController = new SupportController();
+            $avatarController = new AvatarController();
 
             foreach($shareData as $key0 => $value0){
                 $value0['pic'] = unserialize($value0['pic']);
@@ -404,6 +421,8 @@ class ShareController extends Controller
                 } else{
                     $value0['supported'] = 0;
                 }
+
+                $picdata = array();
 
                 foreach($value0['pic'] as $key => $value){
                     $picpath = M('Picture') -> where('id='.$value['id']) -> field('path') -> find();
@@ -421,6 +440,10 @@ class ShareController extends Controller
                 $val['preview'] = mb_substr($val['content'],0,20,'utf-8');
                 //TODO:添加fanlist
                 $val['fanlist'] = $supportController->getShareSupporterInfo($value0['id']);
+
+                $avatarInfo = $avatarController->getAvtarInfo($val['userid']);
+                $val['useravatar'] = $avatarInfo['avataMid'];
+
                 $result[] = $val;
             }
             echo json_encode(array(

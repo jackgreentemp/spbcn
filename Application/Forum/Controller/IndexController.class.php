@@ -328,6 +328,12 @@ class IndexController extends Controller
             $this->error('发表失败：内容长度不能小于20');
         }
 
+        //发表故事控制器逻辑
+        if($forum_id == 1){//发表到“默认版块”的内容，转为故事
+            $contentArray = $this->filterStoryContent($content);
+            D('Spbcn/SpbcnStory')->addStory(is_login(),$title,json_encode($contentArray));
+        }
+
 
         //写入帖子的内容
         $model = D('ForumPost');
@@ -675,5 +681,78 @@ class IndexController extends Controller
         $reply = D('ForumPostReply')->find(intval($reply_id));
         $has_permission = $reply['uid'] == is_login() || is_administrator();
         return $has_permission;
+    }
+
+    public function filterStoryContent($string){
+
+        $pattern = '/>(.*?)<\/p>/';//第一次过滤正则表达式，规则是截取<p></p>之间的内容
+        $pattern2 = '/>(.*?)<\/span>/';//第二次过滤正则表达式，规则是截取<span></span>之间的内容
+        $patternImage = '/<img src=\"(.*?)" _src/';//第三次过滤正则表达式，规则是截取图片url
+
+        preg_match_all($pattern, $string, $out, PREG_PATTERN_ORDER);//第一次过滤正则表达式，规则是截取<p></p>之间的内容
+
+        $findme   = "</span>";//查找是否包含<span>标签
+        $findImage = '<img src=';//查找是否包含图片
+
+        foreach($out[1] as $val){
+            $pos = strpos($val, $findme);
+            if($pos !== false){
+                $posImage = strpos($val, $findImage);
+                if($posImage !== false){
+                    preg_match_all($patternImage, $val, $out3, PREG_PATTERN_ORDER);
+                    if($out3[1][0]){
+//                        $result[] = $out3[1][0];
+                        $result[] = array(
+                            'type' => 2,
+                            'detail' => $out3[1][0]
+                        );
+                    }
+                } else {
+                    preg_match_all($pattern2, $val, $out2, PREG_PATTERN_ORDER);
+                    if($out2[1][0]){
+                        if($out2[1][0]==="<br/>"){
+//                            $result[] = '';
+                            $result[] = array(
+                                'type' => 1,
+                                'detail' => ''
+                            );
+                        }else {
+//                            $result[] = $out2[1][0];
+                            $result[] = array(
+                                'type' => 1,
+                                'detail' => $out2[1][0]
+                            );
+                        }
+                    }
+                }
+            }else{
+                $posImage = strpos($val, $findImage);
+                if($posImage !== false){
+                    preg_match_all($patternImage, $val, $out3, PREG_PATTERN_ORDER);
+                    if($out3[1][0]){
+//                        $result[] = $out3[1][0];
+                        $result[] = array(
+                            'type' => 2,
+                            'detail' => $out3[1][0]
+                        );
+                    }
+                } else {
+                    if($val==="<br/>"){
+//                        $result[] = '';
+                        $result[] = array(
+                            'type' => 1,
+                            'detail' => ''
+                        );
+                    }else {
+//                        $result[] = $val;
+                        $result[] = array(
+                            'type' => 1,
+                            'detail' => $val
+                        );
+                    }
+                }
+            }
+        }
+        return $result;
     }
 }

@@ -16,7 +16,7 @@ use Common\Exception\ApiException;
 class StoryController extends Controller
 {
     public function index(){
-        
+        $this->redirect('Forum/Index/edit');
     }
 
     public function uploadPicture(){
