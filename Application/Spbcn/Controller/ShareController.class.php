@@ -251,11 +251,20 @@ class ShareController extends Controller
         $support['table'] = 'share';
         $support['uid'] = $userid;
 
-        $shareData = $share -> order('id desc') -> select();
+        //分页
+        $start = intval(I('startIndex'));
+        $length = intval(I('length'));
+
+        if($start>=0 && $length > 0){
+            $shareData = $share -> order('id desc') -> limit($start, $length) -> select();
+        } else {
+            $shareData = $share -> order('id desc') -> select();
+        }
+
         if(!$shareData){
             echo json_encode(array(
                 'status'=> 'FAILURE',
-                'reason'=>'查询失败',
+                'reason'=>'查询结果为空',
                 'data'=>'',
             ));
             return false;
@@ -315,7 +324,16 @@ class ShareController extends Controller
         $image = new \Think\Image();
         $pathinfo = 'http://'.$_SERVER['SERVER_NAME'].__ROOT__;
         $share = M('Spbcn_share');
-        $shareData = $share -> order('upnum desc') -> select();
+
+        //分页
+        $start = intval(I('startIndex'));
+        $length = intval(I('length'));
+
+        if($start>=0 && $length > 0){
+            $shareData = $share -> order('upnum desc') -> limit($start, $length) -> select();
+        } else {
+            $shareData = $share -> order('upnum desc') -> select();
+        }
 
         //wb 2014-11-14
         $userid = I('userid');
@@ -326,7 +344,7 @@ class ShareController extends Controller
         if(!$shareData){
             echo json_encode(array(
                 'status'=> 'FAILURE',
-                'reason'=>'查询失败',
+                'reason'=>'查询结果为空',
                 'data'=>'',
             ));
             return false;
@@ -392,6 +410,10 @@ class ShareController extends Controller
         $support['table'] = 'share';
         $support['uid'] = $userid;
 
+        //分页
+        $start = intval(I('startIndex'));
+        $length = intval(I('length'));
+
         if($activityName){
             $activityDetailModel = M('Spbcn_activitydetail');
             $map['content'] = $activityName;
@@ -408,11 +430,18 @@ class ShareController extends Controller
             $image = new \Think\Image();
             $pathinfo = 'http://'.$_SERVER['SERVER_NAME'].__ROOT__;
             $share = M('Spbcn_share');
-            $shareData = $share -> where($map1) -> select();
+//            $shareData = $share -> where($map1) -> select();
+
+            if($start>=0 && $length > 0){
+                $shareData = $share -> where($map1) -> limit($start, $length) -> select();
+            } else {
+                $shareData = $share -> where($map1) -> select();
+            }
+
             if(!$shareData){
                 echo json_encode(array(
                     'status'=> 'FAILURE',
-                    'reason'=>'查询失败',
+                    'reason'=>'查询结果为空',
                     'data'=>'',
                 ));
                 return false;
@@ -488,12 +517,22 @@ class ShareController extends Controller
         $support['table'] = 'share';
         $support['uid'] = $userid;
 
+        //分页
+        $start = intval(I('startIndex'));
+        $length = intval(I('length'));
+
+        if($start>=0 && $length > 0){
+            $shareData = $share -> where('latitude > '.$lat.'-1 and latitude < '.$lat.'+1 and longitude > '.$lon.'-1 and longitude < '.$lon.'+1') -> order('ACOS(SIN(('.$lat.' * 3.1415) / 180 ) *SIN((latitude * 3.1415) / 180 ) +COS(('.$lat.' * 3.1415) / 180 ) * COS((latitude * 3.1415) / 180 ) *COS(('.$lon.'* 3.1415) / 180 - (longitude * 3.1415) / 180 ) ) * 6380') -> limit($start, $length) -> select();
+        } else {
+            $shareData = $share -> where('latitude > '.$lat.'-1 and latitude < '.$lat.'+1 and longitude > '.$lon.'-1 and longitude < '.$lon.'+1') -> order('ACOS(SIN(('.$lat.' * 3.1415) / 180 ) *SIN((latitude * 3.1415) / 180 ) +COS(('.$lat.' * 3.1415) / 180 ) * COS((latitude * 3.1415) / 180 ) *COS(('.$lon.'* 3.1415) / 180 - (longitude * 3.1415) / 180 ) ) * 6380') -> select();
+        }
+
         //网络上的查询语句
         //$sql='select * from users_location where latitude > '.$lat.'-1 and latitude < '.$lat.'+1 and longitude > '.$lon.'-1 and longitude < '.$lon.'+1 order by ACOS(SIN(('.$lat.' * 3.1415) / 180 ) *SIN((latitude * 3.1415) / 180 ) +COS(('.$lat.' * 3.1415) / 180 ) * COS((latitude * 3.1415) / 180 ) *COS(('.$lon.'* 3.1415) / 180 - (longitude * 3.1415) / 180 ) ) * 6380 asc limit 10';
 
         //thinkphp的查询语句 按照距离排序
         //http://blog.csdn.net/hustpzb/article/details/7688993
-        $shareData = $share -> where('latitude > '.$lat.'-1 and latitude < '.$lat.'+1 and longitude > '.$lon.'-1 and longitude < '.$lon.'+1') -> order('ACOS(SIN(('.$lat.' * 3.1415) / 180 ) *SIN((latitude * 3.1415) / 180 ) +COS(('.$lat.' * 3.1415) / 180 ) * COS((latitude * 3.1415) / 180 ) *COS(('.$lon.'* 3.1415) / 180 - (longitude * 3.1415) / 180 ) ) * 6380') -> select();
+//        $shareData = $share -> where('latitude > '.$lat.'-1 and latitude < '.$lat.'+1 and longitude > '.$lon.'-1 and longitude < '.$lon.'+1') -> order('ACOS(SIN(('.$lat.' * 3.1415) / 180 ) *SIN((latitude * 3.1415) / 180 ) +COS(('.$lat.' * 3.1415) / 180 ) * COS((latitude * 3.1415) / 180 ) *COS(('.$lon.'* 3.1415) / 180 - (longitude * 3.1415) / 180 ) ) * 6380') -> select();
 
 //        if(!$shareData){
 //            echo json_encode(array(
