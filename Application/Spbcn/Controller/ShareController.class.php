@@ -28,6 +28,8 @@ class ShareController extends Controller
         $content = I('content');
         $location = I('location');
         $createtime = I('createtime');
+        $longitude = I('longitude');//经度
+        $latitude = I('latitude');//纬度
 
         /* 调用文件上传组件上传文件 */
         $Picture = D('Picture');
@@ -64,6 +66,8 @@ class ShareController extends Controller
             'location' => $location,
             'createtime' => $createtime,
             'create_time' => NOW_TIME,
+            'longitude' => $longitude,
+            'latitude' => $latitude
         );
         $share = M('Spbcn_share');
         $result = $share->create($data);
@@ -96,6 +100,8 @@ class ShareController extends Controller
         $content = I('content');
         $location = I('location');
         $createtime = I('createtime');
+        $longitude = I('longitude');
+        $latitude = I('latitude');
 
         /* 调用文件上传组件上传文件 */
         $Picture = D('Picture');
@@ -132,6 +138,8 @@ class ShareController extends Controller
             'location' => $location,
             'createtime' => $createtime,
             'create_time' => NOW_TIME,
+            'longitude' => $longitude,
+            'latitude' => $latitude
         );
         $share = M('Spbcn_share');
         $result = $share->create($data);
@@ -261,6 +269,7 @@ class ShareController extends Controller
             $value0['pic'] = unserialize($value0['pic']);
 
             //wb 2014-11-14
+            //查询该share是否点过赞
             $support['row'] = $value0['id'];
             if (D('Support')->where($support)->count()) {
                 $value0['supported'] = 1;
@@ -331,6 +340,7 @@ class ShareController extends Controller
             $value0['pic'] = unserialize($value0['pic']);
 
             //wb 2014-11-14
+            //查询该share是否点过赞
             $support['row'] = $value0['id'];
             if (D('Support')->where($support)->count()) {
                 $value0['supported'] = 1;
@@ -453,6 +463,120 @@ class ShareController extends Controller
                 'data' => $result,
             ));
         }
+    }
+
+    //查询附近 根据距离查询share
+    /*
+     * 输入：
+     * userid 用户id
+     * longitude 经度
+     * latitude 纬度
+     * */
+    public function getShareItemByDIstence()
+    {
+        $image = new \Think\Image();
+        $pathinfo = 'http://'.$_SERVER['SERVER_NAME'].__ROOT__;
+        $share = M('Spbcn_share');
+        $lon = I('longitude');
+        $lat = I('latitude');
+
+
+        //wb 2014-11-14
+        $userid = I('userid');
+
+        $support['appname'] = 'Spbcn';;
+        $support['table'] = 'share';
+        $support['uid'] = $userid;
+
+        //网络上的查询语句
+        //$sql='select * from users_location where latitude > '.$lat.'-1 and latitude < '.$lat.'+1 and longitude > '.$lon.'-1 and longitude < '.$lon.'+1 order by ACOS(SIN(('.$lat.' * 3.1415) / 180 ) *SIN((latitude * 3.1415) / 180 ) +COS(('.$lat.' * 3.1415) / 180 ) * COS((latitude * 3.1415) / 180 ) *COS(('.$lon.'* 3.1415) / 180 - (longitude * 3.1415) / 180 ) ) * 6380 asc limit 10';
+
+        //thinkphp的查询语句 按照距离排序
+        //http://blog.csdn.net/hustpzb/article/details/7688993
+        $shareData = $share -> where('latitude > '.$lat.'-1 and latitude < '.$lat.'+1 and longitude > '.$lon.'-1 and longitude < '.$lon.'+1') -> order('ACOS(SIN(('.$lat.' * 3.1415) / 180 ) *SIN((latitude * 3.1415) / 180 ) +COS(('.$lat.' * 3.1415) / 180 ) * COS((latitude * 3.1415) / 180 ) *COS(('.$lon.'* 3.1415) / 180 - (longitude * 3.1415) / 180 ) ) * 6380') -> select();
+
+//        if(!$shareData){
+//            echo json_encode(array(
+//                'status'=> 'FAILURE',
+//                'reason'=>'查询失败',
+//                'data'=>'',
+//            ));
+//            return false;
+//        }
+
+        $supportController = new SupportController();
+
+        $avatarController = new AvatarController();
+
+        foreach($shareData as $key0 => $value0){
+            $value0['pic'] = unserialize($value0['pic']);
+
+            //wb 2014-11-14
+            //查询该share是否点过赞
+            $support['row'] = $value0['id'];
+            if (D('Support')->where($support)->count()) {
+                $value0['supported'] = 1;
+            } else{
+                $value0['supported'] = 0;
+            }
+
+            $picdata = array();
+
+            foreach($value0['pic'] as $key => $value){
+                $picpath = M('Picture') -> where('id='.$value['id']) -> field('path') -> find();
+                $picdata[$key]['index'] = $key+1;
+                $picdata[$key]['pichurl'] = $pathinfo.$picpath['path'];//大图
+                $temp = pathinfo($picpath['path']);
+                $thumbPath = $temp['dirname'].'/'.$temp['filename'].'_thumb.jpg';
+                $image->open('.'.$thumbPath);// 按照原图的比例生成一个最大为150*150的缩略图并保存为thumb.jpg
+                $picdata[$key]['picurl'] = $pathinfo.$thumbPath;
+                $picdata[$key]['width'] = $image->width();
+                $picdata[$key]['height'] = $image->height();
+            }
+            $val = $value0;
+            $val['pic'] = $picdata;
+            $val['preview'] = mb_substr($val['content'],0,20,'utf-8');
+            //TODO:添加fanlist
+
+            $val['fanlist'] = $supportController->getShareSupporterInfo($value0['id']);
+
+            $avatarInfo = $avatarController->getAvtarInfo($val['userid']);
+            $val['useravatar'] = $avatarInfo['avataMid'];
+
+            $val['distance'] = $this -> distanceBetween($lat, $lon, $value0['latitude'], $value0['longitude']);
+
+            $result[] = $val;
+        }
+        echo json_encode(array(
+            'status'=> 'SUCCESS',
+            'reason' => '',
+            'date' => date('Y-m-d'),
+            'data' => $result,
+        ));
+    }
+
+    /**
+     * 计算两个坐标之间的距离(米)
+     * @param float $fP1Lat 起点(纬度)
+     * @param float $fP1Lon 起点(经度)
+     * @param float $fP2Lat 终点(纬度)
+     * @param float $fP2Lon 终点(经度)
+     * @return int
+     */
+    function distanceBetween($fP1Lat, $fP1Lon, $fP2Lat, $fP2Lon){
+        $fEARTH_RADIUS = 6378137;
+        //角度换算成弧度
+        $fRadLon1 = deg2rad($fP1Lon);
+        $fRadLon2 = deg2rad($fP2Lon);
+        $fRadLat1 = deg2rad($fP1Lat);
+        $fRadLat2 = deg2rad($fP2Lat);
+        //计算经纬度的差值
+        $fD1 = abs($fRadLat1 - $fRadLat2);
+        $fD2 = abs($fRadLon1 - $fRadLon2);
+        //距离计算
+        $fP = pow(sin($fD1/2), 2) +
+            cos($fRadLat1) * cos($fRadLat2) * pow(sin($fD2/2), 2);
+        return intval($fEARTH_RADIUS * 2 * asin(sqrt($fP)) + 0.5);
     }
 
 }
