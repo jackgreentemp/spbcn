@@ -26,3 +26,41 @@ function asc_unserialize($serial_str) {
     $serial_str= str_replace("\r", "", $serial_str);
     return unserialize($serial_str);
 }
+
+function get_allfiles($path,&$files) {
+    if(is_dir($path)){
+        $dp = dir($path);
+        while ($file = $dp ->read()){
+            if($file !="." && $file !=".."){
+                get_allfiles($path."/".$file, $files);
+            }
+        }
+        $dp ->close();
+    }
+    if(is_file($path)){
+        $files[] =  $path;
+    }
+}
+function get_allDirs($path,&$files) {
+    if(is_dir($path)){
+        $files[] =  $path;
+        $dp = dir($path);
+        while ($file = $dp ->read()){
+            if($file !="." && $file !=".."){
+                get_allDirs($path."/".$file, $files);
+            }
+        }
+        $dp ->close();
+    }
+}
+
+function get_filenamesbydir($dir){
+    $files =  array();
+    get_allfiles($dir,$files);
+    return $files;
+}
+function get_filesDir($dir){
+    $files =  array();
+    get_allDirs($dir,$files);
+    return $files;
+}
