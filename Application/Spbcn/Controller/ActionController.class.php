@@ -358,23 +358,70 @@ class ActionController extends Controller
     {
         $actionModule = M('Spbcn_actionlist');
 
-        $sex = I('sex');//0为男，1为女
+        $actionFilesModule = M('Spbcn_actionfiles');
+
+        $pathinfo = 'http://'.$_SERVER['SERVER_NAME'].__ROOT__;
+
+        //$sex = I('sex');//0为男，1为女
 
         $module = M('Spbcn_actionbodylist');
 
-        if('0'==$sex){
-            $where['bodydetail'] = array('like', '男%');
-        } else{
-            $where['bodydetail'] = array('like', '女%');
-        }
+//        if('0'==$sex){
+//            $where['bodydetail'] = array('like', '男%');
+//        } else{
+//            $where['bodydetail'] = array('like', '女%');
+//        }
 
-        $result = $module -> where($where) -> getField('bodydetail', true);
+        $where['bodydetail'] = array('like', '男%');
+
+        $result = $module -> where($where) -> getField('id, bodydetail, bodyid');
 
         foreach($result as $value){
-            $whereTmp['bodydetail'] = $value;
+            $whereTmp['bodydetail'] = $value['bodydetail'];
             $actionDataArray = $actionModule -> where($whereTmp) -> select();
+            foreach($actionDataArray as $key => $actionData){
+                $actionId = $actionData['id'];
+                $refId = $actionModule -> where('id='.$actionId) -> getField('refId');
+                if($refId > 0){
+                    $actionId = $refId;
+                }
+                $whereFiles['actionId'] = $actionId;
+                $whereFiles['filename'] = array('like', 'xt%');
+                $fileResult = $actionFilesModule -> where($whereFiles) -> find();
+                //$actionDataArray[$key]['pic'] = $pathinfo.'/Uploads/spbcn/actions/'.$fileResult['body'].'/'.$fileResult['bodydetail'].'/'.$fileResult['action'].'/'.$fileResult['filename'].'.'.$fileResult['filetype'];
+                $actionDataArray[$key]['pic'] = $pathinfo.'/Uploads/spbcn/actions/'.charsetTrans($fileResult['body']).'/'.charsetTrans($fileResult['bodydetail']).'/'.charsetTrans($fileResult['action']).'/'.charsetTrans($fileResult['filename']).'.'.$fileResult['filetype'];
+            }
 
-            $data['body'] = $value;
+
+            $data['body'] = $value['bodydetail'];
+            $data['bodyid'] = $value['bodyid'];
+            $data['action'] = $actionDataArray;
+
+            $resultFinal[] = $data;
+        }
+
+        $where['bodydetail'] = array('like', '女%');
+        $result = $module -> where($where) -> getField('id, bodydetail, bodyid');
+
+        foreach($result as $value){
+            $whereTmp['bodydetail'] = $value['bodydetail'];
+            $actionDataArray = $actionModule -> where($whereTmp) -> select();
+            foreach($actionDataArray as $key => $actionData){
+                $actionId = $actionData['id'];
+                $refId = $actionModule -> where('id='.$actionId) -> getField('refId');
+                if($refId > 0){
+                    $actionId = $refId;
+                }
+                $whereFiles['actionId'] = $actionId;
+                $whereFiles['filename'] = array('like', 'xt%');
+                $fileResult = $actionFilesModule -> where($whereFiles) -> find();
+//                $actionDataArray[$key]['pic'] = $pathinfo.'/Uploads/spbcn/actions/'.$fileResult['body'].'/'.$fileResult['bodydetail'].'/'.$fileResult['action'].'/'.$fileResult['filename'].'.'.$fileResult['filetype'];
+                $actionDataArray[$key]['pic'] = $pathinfo.'/Uploads/spbcn/actions/'.charsetTrans($fileResult['body']).'/'.charsetTrans($fileResult['bodydetail']).'/'.charsetTrans($fileResult['action']).'/'.charsetTrans($fileResult['filename']).'.'.$fileResult['filetype'];
+            }
+
+
+            $data['body'] = $value['bodydetail'];
+            $data['bodyid'] = $value['bodyid'];
             $data['action'] = $actionDataArray;
 
             $resultFinal[] = $data;
@@ -409,7 +456,7 @@ class ActionController extends Controller
             $actionId = $refId;
         }
 
-        $module = M(Spbcn_actionfiles);
+        $module = M('Spbcn_actionfiles');
 
         $where['actionId'] = $actionId;
 
@@ -418,7 +465,8 @@ class ActionController extends Controller
         $pathinfo = 'http://'.$_SERVER['SERVER_NAME'].__ROOT__;
 
         foreach($result as $value){
-            $data[] = $pathinfo.'/Uploads/spbcn/actions/'.$value['body'].'/'.$value['bodydetail'].'/'.$value['action'].'/'.$value['filename'].'.'.$value['filetype'];
+//            $data[] = $pathinfo.'/Uploads/spbcn/actions/'.$value['body'].'/'.$value['bodydetail'].'/'.$value['action'].'/'.$value['filename'].'.'.$value['filetype'];
+            $data[] = $pathinfo.'/Uploads/spbcn/actions/'.charsetTrans($value['body']).'/'.charsetTrans($value['bodydetail']).'/'.charsetTrans($value['action']).'/'.charsetTrans($value['filename']).'.'.$value['filetype'];
         }
 
         echo json_encode(array(
@@ -480,4 +528,6 @@ class ActionController extends Controller
             'data' => $result,
         ));
     }
+
+
 }

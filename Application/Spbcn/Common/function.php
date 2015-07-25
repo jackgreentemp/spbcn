@@ -64,3 +64,8 @@ function get_filesDir($dir){
     get_allDirs($dir,$files);
     return $files;
 }
+
+function charsetTrans($str){
+    $s = iconv("UTF-8", "gb2312", $str);
+    return rawurlencode($s);//rawurlencode将空格装换为20%
+}
