@@ -20,5 +20,4 @@ class SpbcnShareModel extends Model
         $followerUidArray = M('Support')->where($data)->order('uid')->getField('uid',true);
         return $followerUidArray;
     }
-
 } 

@@ -618,4 +618,147 @@ class ShareController extends Controller
         return intval($fEARTH_RADIUS * 2 * asin(sqrt($fP)) + 0.5);
     }
 
+
+    /**
+     * 功能：新增评论
+     * @param [String][shareid]
+     * @param [String][userid]
+     * @param [String][atid]
+     * @return [String][content]
+     * 作者：theseus
+     * 日期：15-8-1
+     */
+    public function addComment(){
+        $shareid = I('shareid');
+        $uid = I('userid');
+        $atid = I('atid');
+        $content = I('content');
+
+        $commentModel = D('Spbcn_share_comment');
+
+        //写入数据库
+        $result = $commentModel->addComment($uid, $shareid, $content, $atid);
+        if (!$result) {
+            echo json_encode(array(
+                'status'=> 'FAILURE',
+                'reason' => '评论失败：' . $commentModel->getError(),
+                'date' => date('Y-m-d'),
+                'data' => $result,
+            ));
+            return false;
+        }
+
+        //写入数据库成功，记录动作
+        action_log('add_share_comment', 'SpncnShareComment', $result, $uid);
+
+        //通知微博作者
+        $shareUserid = D('SpbcnShare')->where(array('id' => $shareid))->getField('userid');
+        if($shareUserid)
+            D('SpbcnMessage')->sendMessageWithoutCheckSelf($shareUserid, "新评论：".$content, '', '', $uid, 5);
+
+        //通知被回复的人。为了避免出现两次通知，进行了特殊处理
+        if ($shareUserid != $atid) {
+            D('SpbcnMessage')->sendMessageWithoutCheckSelf($atid, "新回复：".$content, '', '', $uid, 5);
+        }
+
+        echo json_encode(array(
+            'status'=> 'SUCCESS',
+            'reason' => '',
+            'date' => date('Y-m-d'),
+            'data' => $result,
+        ));
+
+
+
+    }
+
+
+    /**
+     * 功能：查询评论列表
+     * @param [类型][变量名称]
+     * @param
+     * @param
+     * @return
+     * 作者：theseus
+     * 日期：15-8-1
+     */
+
+    public function getComment(){
+        $shareid = I('shareid');
+        $userid = I('userid');
+
+        $commentModel = D('Spbcn_share_comment');
+
+        //写入数据库
+        $result = $commentModel->getCommentByShareId($shareid);
+
+        if(!$result){
+            echo json_encode(array(
+                'status'=> 'FAILURE',
+                'reason' => '失败：' . $commentModel->getError(),
+                'date' => date('Y-m-d'),
+                'data' => $result,
+            ));
+        } else {
+            echo json_encode(array(
+                'status'=> 'SUCCESS',
+                'reason' => '',
+                'date' => date('Y-m-d'),
+                'data' => $result,
+            ));
+        }
+
+    }
+
+
+    /**
+     * 功能：删除评论
+     * @param [类型][变量名称]
+     * @param
+     * @param
+     * @return
+     * 作者：theseus
+     * 日期：15-8-1
+     */
+    public function deleteComment(){
+        $comment_id = I('commentid');
+        $userid = I('userid');
+
+        $commentModule = D('SpbcnShareComment');
+
+        $comment = $commentModule->getCommentById($comment_id);
+        if(!$comment){
+            echo json_encode(array(
+                'status'=> 'FAILURE',
+                'reason' => '该share不存在',
+                'date' => date('Y-m-d'),
+                'data' => '',
+            ));
+            return false;
+        }
+        if($comment['uid'] != $userid){
+            echo json_encode(array(
+                'status'=> 'FAILURE',
+                'reason' => '非作者不能删除该条评论',
+                'date' => date('Y-m-d'),
+                'data' => '',
+            ));
+            return false;
+        }
+
+        $commentModule->deleteComment($comment_id);
+
+        //记录动作
+        action_log('delete_share_comment', 'SpncnShareComment', $comment_id, $userid);
+
+        echo json_encode(array(
+            'status'=> 'SUCCESS',
+            'reason' => '',
+            'date' => date('Y-m-d'),
+            'data' => '',
+        ));
+
+    }
+
+
 }
